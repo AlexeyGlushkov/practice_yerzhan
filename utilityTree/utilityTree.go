@@ -13,6 +13,7 @@ func main() {
 	path, err := getDir()
 	if err != nil {
 		fmt.Printf("error occured: %v \n", err)
+		return
 	}
 
 	fmt.Printf("directory: %v \n", path)
