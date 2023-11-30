@@ -24,7 +24,7 @@ func main() {
 func getDir() (string, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		fmt.Println("error")
+		fmt.Printf("error occured: %v \n", err)
 		return "", err
 	}
 
@@ -33,9 +33,9 @@ func getDir() (string, error) {
 }
 
 func getTree(path string) error {
-
 	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
+			fmt.Printf("error occured: %v \n", err)
 			return err
 		}
 		if info.IsDir() {
@@ -45,5 +45,8 @@ func getTree(path string) error {
 		}
 		return nil
 	})
-	return err
+	if err != nil {
+		fmt.Printf("error occured: %v \n", err)
+	}
+	return nil
 }
