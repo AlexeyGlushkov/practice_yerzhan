@@ -8,20 +8,20 @@ import (
 func main() {
 	sampleString := "count each word in in in in the the string"
 
-	counter := WordCount(sampleString, " ")
+	counter := WordCount(sampleString)
 
 	fmt.Println(counter)
 }
 
-func WordCount(stroke string, sep string) map[string]int {
+func WordCount(stroke string) map[string]int {
 	wordCount := make(map[string]int)
 
-	slice := strings.Split(stroke, sep)
+	slice := strings.Split(stroke, " ")
 	fmt.Println(slice)
 
 	for _, word := range slice {
 
-		if doesExist(word, stroke) == true {
+		if doesExist(word, stroke) {
 			wordCount[word]++
 		} else {
 			wordCount[word] = 1
