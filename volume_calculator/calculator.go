@@ -25,11 +25,6 @@ func (c Cube) Volume() float64 {
 	return math.Pow(c.Length, 3)
 }
 
-func main() {
-	PrintCubeVolume(3.0)
-	PrintSphereVolume(10.0)
-}
-
 func PrintSphereVolume(radius float64) {
 	sphere := Sphere{Radius: radius}
 	fmt.Printf("Volume of Sphere: %.2f\n", sphere.Volume())
@@ -38,4 +33,9 @@ func PrintSphereVolume(radius float64) {
 func PrintCubeVolume(length float64) {
 	cube := Cube{Length: length}
 	fmt.Printf("Volume of Cube: %.2f\n", cube.Volume())
+}
+
+func main() {
+	PrintCubeVolume(3.0)
+	PrintSphereVolume(10.0)
 }
