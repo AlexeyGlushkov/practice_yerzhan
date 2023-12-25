@@ -21,3 +21,5 @@ ALTER TABLE employee
     ADD CONSTRAINT fk_position
     FOREIGN KEY (position_id)
     REFERENCES position (position_id);
+
+--TODO: INDEXES for FirstName, LastName and both combinations of FirstName and LastName.
