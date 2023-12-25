@@ -1,9 +1,20 @@
-PROJECT_DIR = $(shell pwd)
-PROJECT_BIN = $(PROJECT_DIR)/bin
-
-GOLANGCI_LINT = $(PROJECT_BIN)/golangci-lint
-LINTER_VERSION := v1.55.2
+.SILENT:
 
 .PHONY: lint
-lint: $(GOLANGCI_LINT)
-	$(GOLANGCI_LINT) run ./...
+lint:
+	golangci-lint run
+
+create-migration:
+	migrate create -ext sql -dir database/migration/ -seq $(NAME)
+
+migrate-up:
+	migrate -path database/migration/ -database "postgresql://postgres:nivea100@localhost:5432/postgres?sslmode=disable" -verbose up
+
+migrate-down:
+	migrate -path database/migration/ -database "postgresql://postgres:nivea100@localhost:5432/postgres?sslmode=disable" -verbose down
+
+migrate-fix: 
+	migrate -path database/migration/ -database "postgresql://postgres:nivea100@localhost:5432/postgres?sslmode=disable" force $(VERSION)
+
+clean-migration:
+	del /Q database\migration\$(FILENAME)
