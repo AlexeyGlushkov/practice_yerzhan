@@ -1,13 +1,6 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+BEGIN;
 
-CREATE TABLE employee (
-    employee_id BIGINT PRIMARY KEY,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    position_id UUID,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE position (
     position_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -17,9 +10,14 @@ CREATE TABLE position (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-ALTER TABLE employee
-    ADD CONSTRAINT fk_position
-    FOREIGN KEY (position_id)
-    REFERENCES position (position_id);
+CREATE TABLE employee (
+    employee_id BIGINT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    position_id UUID,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_position FOREIGN KEY (position_id) REFERENCES position (position_id)
+);
 
---TODO: INDEXES for FirstName, LastName and both combinations of FirstName and LastName.
+COMMIT;
