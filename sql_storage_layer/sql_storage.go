@@ -35,7 +35,7 @@ func main() {
 		Position_id: "1b76ab62-954c-492c-9877-db4f24881376",
 	}
 
-	err = empRepo.Create(testEmployee)
+	err = empRepo.CreateEmployee(testEmployee)
 	if err != nil {
 		fmt.Printf("Failed to create employee, err: %v \n", err)
 		return
