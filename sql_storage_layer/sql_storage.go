@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -26,20 +28,24 @@ func main() {
 	}
 	defer db.Close()
 
-	empRepo := &EmployeeRepository{DB: db}
+	parentCtx := context.Background()
+	ctx, cancel := context.WithTimeout(parentCtx, 5*time.Second)
+	defer cancel()
 
-	testEmployee := Employee{
-		Employee_id: 5,
-		First_name:  "Jack",
-		Last_name:   "Suuui",
-		Position_id: "1b76ab62-954c-492c-9877-db4f24881376",
-	}
+	repo := &Repository{DB: db}
 
-	err = empRepo.CreateEmployee(testEmployee)
+	// empID, posID, err := repo.Create(ctx, employeeFixture, positionFixture)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Printf("Created employee with id: %v and position with id %v \n", empID, posID)
+
+	result, err := repo.GetByID(ctx, 7)
 	if err != nil {
-		fmt.Printf("Failed to create employee, err: %v \n", err)
-		return
+		log.Fatal(err)
 	}
 
-	fmt.Println("Employee created successfully")
+	fmt.Printf("Founded employee with id: %v, firstname: %v, lastname: %v, position_id: %v",
+		result.Employee_id, result.First_name, result.Last_name, result.Position_id)
 }
