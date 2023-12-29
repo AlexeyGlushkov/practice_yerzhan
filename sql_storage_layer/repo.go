@@ -12,44 +12,30 @@ type Repository struct {
 	DB *sql.DB
 }
 
-func (r *Repository) Create(ctx context.Context, emp Employee, pos Position) (int, string, error) {
-
-	fail := func(err error) (int, string, error) {
-		return 0, "", fmt.Errorf("Create: %w", err)
-	}
-
-	tx, err := r.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return fail(err)
-	}
-	defer tx.Rollback()
-
-	insertPositionQuery := `INSERT INTO position (position_name, salary)
+func (r *Repository) CreateEmployee(ctx context.Context, tx *sql.Tx, empFirstname, empLastname string) (string, error) {
+	insertEmployeeQuery := `INSERT INTO employee (first_name, last_name)
 	VALUES ($1, $2) RETURNING position_id;`
 
 	var positionID string
 
-	err = tx.QueryRowContext(ctx, insertPositionQuery, pos.Position_name, pos.Salary).Scan(&positionID)
+	err := tx.QueryRowContext(ctx, insertEmployeeQuery, empFirstname, empLastname).Scan(&positionID)
 	if err != nil {
-		return fail(err)
+		return "", err
 	}
 
-	insertEmployeeQuery := `
-	INSERT INTO employee (first_name, last_name, position_id)
-	VALUES ($1, $2, $3) RETURNING employee_id;`
+	return positionID, nil
+}
 
-	var employeeID int
+func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, posID, posName string, salary int) error {
+	insertPositionQuery := `INSERT INTO position (position_id, position_name, salary)
+	VALUES ($1, $2, $3)`
 
-	err = tx.QueryRowContext(ctx, insertEmployeeQuery, emp.First_name, emp.Last_name, positionID).Scan(&employeeID)
+	_, err := tx.ExecContext(ctx, insertPositionQuery, posID, posName, salary)
 	if err != nil {
-		return fail(err)
+		return err
 	}
 
-	if err = tx.Commit(); err != nil {
-		return fail(err)
-	}
-
-	return employeeID, positionID, nil
+	return nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, empID int) (Employee, error) {

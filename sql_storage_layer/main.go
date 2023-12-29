@@ -34,18 +34,17 @@ func main() {
 
 	repo := &Repository{DB: db}
 
-	// empID, posID, err := repo.Create(ctx, employeeFixture, positionFixture)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// SERVICE init
 
-	// fmt.Printf("Created employee with id: %v and position with id %v \n", empID, posID)
+	svc := &Service{Repo: *repo}
 
-	result, err := repo.GetByID(ctx, 7)
+	// svc.Create() -> empID
+	err = svc.CreateService(ctx, employeeFixture, positionFixture)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("CreateService failed")
 	}
 
-	fmt.Printf("Founded employee with id: %v, firstname: %v, lastname: %v, position_id: %v",
-		result.Employee_id, result.First_name, result.Last_name, result.Position_id)
+	fmt.Println("Successfully created")
+
+	// svc.getByID(empID)
 }
