@@ -21,12 +21,12 @@ func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Positio
 	}
 	defer tx.Rollback()
 
-	positionID, err := svc.Repo.CreateEmployee(ctx, tx, emp.First_name, emp.Last_name)
+	employeeID, err := svc.Repo.CreateEmployee(ctx, tx, emp.First_name, emp.Last_name)
 	if err != nil {
 		return fail(err)
 	}
 
-	if err = svc.Repo.CreatePosition(ctx, tx, positionID, pos.Position_name, pos.Salary); err != nil {
+	if err = svc.Repo.CreatePosition(ctx, tx, employeeID, pos.Position_name, pos.Salary); err != nil {
 		return fail(err)
 	}
 

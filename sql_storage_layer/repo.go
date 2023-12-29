@@ -14,23 +14,23 @@ type Repository struct {
 
 func (r *Repository) CreateEmployee(ctx context.Context, tx *sql.Tx, empFirstname, empLastname string) (string, error) {
 	insertEmployeeQuery := `INSERT INTO employee (first_name, last_name)
-	VALUES ($1, $2) RETURNING position_id;`
+	VALUES ($1, $2) RETURNING employee_id;`
 
-	var positionID string
+	var employeeID string
 
-	err := tx.QueryRowContext(ctx, insertEmployeeQuery, empFirstname, empLastname).Scan(&positionID)
+	err := tx.QueryRowContext(ctx, insertEmployeeQuery, empFirstname, empLastname).Scan(&employeeID)
 	if err != nil {
 		return "", err
 	}
 
-	return positionID, nil
+	return employeeID, nil
 }
 
-func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, posID, posName string, salary int) error {
-	insertPositionQuery := `INSERT INTO position (position_id, position_name, salary)
+func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, empID, posName string, salary int) error {
+	insertPositionQuery := `INSERT INTO position (employee_id, position_name, salary)
 	VALUES ($1, $2, $3)`
 
-	_, err := tx.ExecContext(ctx, insertPositionQuery, posID, posName, salary)
+	_, err := tx.ExecContext(ctx, insertPositionQuery, empID, posName, salary)
 	if err != nil {
 		return err
 	}
@@ -45,13 +45,13 @@ func (r *Repository) GetByID(ctx context.Context, empID int) (Employee, error) {
 	}
 
 	selectStatement := `
-	SELECT employee_id, first_name, last_name, position_id FROM employee
+	SELECT employee_id, first_name, last_name FROM employee
 	WHERE employee_id = $1;`
 
 	var resEmp Employee
 
 	row := r.DB.QueryRowContext(ctx, selectStatement, empID)
-	err := row.Scan(&resEmp.Employee_id, &resEmp.First_name, &resEmp.Last_name, &resEmp.Position_id)
+	err := row.Scan(&resEmp.Employee_id, &resEmp.First_name, &resEmp.Last_name)
 
 	if err != nil {
 		return fail(err)
@@ -60,7 +60,7 @@ func (r *Repository) GetByID(ctx context.Context, empID int) (Employee, error) {
 	return resEmp, nil
 }
 
-func (r *Repository) UpdateEmployee(ctx context.Context, empID int, fName, lName, posID string) (Employee, error) {
+func (r *Repository) UpdateEmployee(ctx context.Context, empID int, fName, lName string) (Employee, error) {
 
 	fail := func(err error) (Employee, error) {
 		return Employee{}, fmt.Errorf("UpdateEmployee: %w", err)
@@ -68,14 +68,14 @@ func (r *Repository) UpdateEmployee(ctx context.Context, empID int, fName, lName
 
 	updateStatement := `
 	UPDATE employee
-	SET first_name = $2, last_name = $3, position_id = $4
+	SET first_name = $2, last_name = $3
 	WHERE employee_id = $1
-	RETURNING employee_id, first_name, last_name, position_id;`
+	RETURNING employee_id, first_name, last_name;`
 
 	var updatedEmp Employee
 
-	row := r.DB.QueryRowContext(ctx, updateStatement, empID, fName, lName, posID)
-	err := row.Scan(&updatedEmp.Employee_id, &updatedEmp.First_name, &updatedEmp.Last_name, &updatedEmp.Position_id)
+	row := r.DB.QueryRowContext(ctx, updateStatement, empID, fName, lName)
+	err := row.Scan(&updatedEmp.Employee_id, &updatedEmp.First_name, &updatedEmp.Last_name)
 
 	if err != nil {
 		return fail(err)
