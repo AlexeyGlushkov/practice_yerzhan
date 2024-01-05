@@ -2,40 +2,49 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Trainer struct {
-	Name string
-	Age  int
-	City string
-}
-
 func main() {
+	parentCtx := context.Background()
+	ctx, cancel := context.WithTimeout(parentCtx, 5*time.Second)
+	defer cancel()
+
+	// Connection to MongoDB
 	uri := "mongodb+srv://kousetsu:kousetsuxo@kousetsu.krfgpxk.mongodb.net/?retryWrites=true&w=majority"
-	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 
-	client, err := mongo.Connect(context.TODO(), opts)
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Disconnect(ctx)
 
+	db := client.Database("practice")
+
+	// Collections
+	employeeCollection := db.Collection("employees")
+	positionCollection := db.Collection("positions")
+
+	// Repo's
+	employeeRepo := &EmployeeRepository{Collection: employeeCollection}
+	positionRepo := &PositionRepository{Collection: positionCollection}
+
+	// Service
+	svc := &Service{
+		EmployeeRepo: employeeRepo,
+		PositionRepo: positionRepo,
+		Database:     db,
+	}
+
+	// Service usage
+	employeeID, err := svc.CreateService(ctx, "John", "Doe", "Manager", 5000)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-
-	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected!")
-
+	log.Println("Created Employee with ID:", employeeID)
 }
