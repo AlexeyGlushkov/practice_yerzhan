@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,13 +25,19 @@ func (s *Service) CreateService(ctx context.Context, firstName, lastName, positi
 		return "", err
 	}
 
-	employeeID, err := s.EmployeeRepo.Create(ctx, firstName, lastName)
+	employeeIDstring, err := s.EmployeeRepo.Create(ctx, firstName, lastName)
 	if err != nil {
 		session.AbortTransaction(ctx)
 		return "", err
 	}
 
-	err = s.PositionRepo.Create(ctx, employeeID, positionName, salary)
+	employeeID, err := primitive.ObjectIDFromHex(employeeIDstring)
+	if err != nil {
+		session.AbortTransaction(ctx)
+		return "", err
+	}
+
+	err = s.PositionRepo.Create(ctx, positionName, salary, employeeID)
 	if err != nil {
 		session.AbortTransaction(ctx)
 		return "", err
@@ -41,5 +48,5 @@ func (s *Service) CreateService(ctx context.Context, firstName, lastName, positi
 		return "", err
 	}
 
-	return employeeID, nil
+	return employeeIDstring, nil
 }

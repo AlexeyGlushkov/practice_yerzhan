@@ -17,10 +17,16 @@ type PositionRepository struct {
 }
 
 func (er *EmployeeRepository) Create(ctx context.Context, firstName, lastName string) (string, error) {
-	result, err := er.Collection.InsertOne(ctx, Employee{
-		FirstName: firstName,
-		LastName:  lastName,
-	})
+
+	objectID := primitive.NewObjectID()
+
+	employee := Employee{
+		EmployeeID: objectID,
+		FirstName:  firstName,
+		LastName:   lastName,
+	}
+
+	result, err := er.Collection.InsertOne(ctx, employee)
 	if err != nil {
 		return "", err
 	}
@@ -35,11 +41,17 @@ func (er *EmployeeRepository) Create(ctx context.Context, firstName, lastName st
 	return insertedIDString, nil
 }
 
-func (pr *PositionRepository) Create(ctx context.Context, employeeID, positionName string, salary int) error {
-	_, err := pr.Collection.InsertOne(ctx, Position{
-		EmployeeID:   employeeID,
+func (pr *PositionRepository) Create(ctx context.Context, positionName string, salary int, employeeID primitive.ObjectID) error {
+
+	objectID := primitive.NewObjectID()
+
+	position := Position{
+		PositionID:   objectID,
 		PositionName: positionName,
 		Salary:       salary,
-	})
+		EmployeeID:   employeeID,
+	}
+
+	_, err := pr.Collection.InsertOne(ctx, position)
 	return err
 }
