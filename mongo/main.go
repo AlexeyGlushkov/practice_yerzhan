@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// Service usage
-	employeeID, err := svc.CreateService(ctx, "John", "Doe", "Manager", 5000)
+	employeeID, err := svc.Create(ctx, "John", "Doe", "Manager", 5000)
 	if err != nil {
 		log.Fatal(err)
 	}

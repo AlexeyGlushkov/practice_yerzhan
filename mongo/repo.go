@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -54,4 +55,18 @@ func (pr *PositionRepository) Create(ctx context.Context, positionName string, s
 
 	_, err := pr.Collection.InsertOne(ctx, position)
 	return err
+}
+
+func (er *EmployeeRepository) GetByID(ctx context.Context, employeeID primitive.ObjectID) (Employee, error) {
+
+	filter := bson.M{"_id": employeeID}
+
+	var employee Employee
+
+	err := er.Collection.FindOne(ctx, filter).Decode(&employee)
+	if err != nil {
+		return Employee{}, err
+	}
+
+	return employee, nil
 }
