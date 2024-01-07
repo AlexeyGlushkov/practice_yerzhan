@@ -58,10 +58,10 @@ func (s *Service) GetByID(ctx context.Context, employeeID string) (Employee, err
 		return Employee{}, err
 	}
 
-	employee, err := s.EmployeeRepo.GetByID(ctx, employeeIDhex)
+	result, err := s.EmployeeRepo.GetByID(ctx, employeeIDhex)
 	if err != nil {
 		return Employee{}, err
 	}
 
-	return employee, nil
+	return result, nil
 }
