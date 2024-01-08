@@ -38,10 +38,10 @@ func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, empID, posN
 	return nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, empID int) (Employee, error) {
+func (r *Repository) GetByID(ctx context.Context, empID string) (Employee, error) {
 
 	fail := func(err error) (Employee, error) {
-		return Employee{}, fmt.Errorf("GetByID: %w", err)
+		return Employee{}, fmt.Errorf("GetByID error: %w", err)
 	}
 
 	selectStatement := `
@@ -60,10 +60,10 @@ func (r *Repository) GetByID(ctx context.Context, empID int) (Employee, error) {
 	return resEmp, nil
 }
 
-func (r *Repository) UpdateEmployee(ctx context.Context, empID int, fName, lName string) (Employee, error) {
+func (r *Repository) UpdateEmployee(ctx context.Context, empID, fName, lName string) (Employee, error) {
 
 	fail := func(err error) (Employee, error) {
-		return Employee{}, fmt.Errorf("UpdateEmployee: %w", err)
+		return Employee{}, fmt.Errorf("UpdateEmployee error: %w", err)
 	}
 
 	updateStatement := `
@@ -87,7 +87,7 @@ func (r *Repository) UpdateEmployee(ctx context.Context, empID int, fName, lName
 func (r *Repository) UpdatePosition(ctx context.Context, posID, posName string, salary int) (Position, error) {
 
 	fail := func(err error) (Position, error) {
-		return Position{}, fmt.Errorf("UpdateEmployee: %w", err)
+		return Position{}, fmt.Errorf("UpdatePosition error : %w", err)
 	}
 
 	updateStatement := `
@@ -106,4 +106,21 @@ func (r *Repository) UpdatePosition(ctx context.Context, posID, posName string, 
 	}
 
 	return updatedPos, nil
+}
+
+func (repo *Repository) Delete(ctx context.Context, tx *sql.Tx, employeeID string) error {
+
+	fail := func(err error) error {
+		return fmt.Errorf("Delte error: %w", err)
+	}
+
+	if _, err := tx.ExecContext(ctx, "DELETE FROM position WHERE employee_id = $1", employeeID); err != nil {
+		return fail(err)
+	}
+
+	if _, err := tx.ExecContext(ctx, "DELETE FROM employee WHERE employee_id = $1", employeeID); err != nil {
+		return fail(err)
+	}
+
+	return nil
 }
