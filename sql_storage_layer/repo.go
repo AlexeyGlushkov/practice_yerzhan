@@ -124,3 +124,9 @@ func (repo *Repository) Delete(ctx context.Context, tx *sql.Tx, employeeID strin
 
 	return nil
 }
+
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{
+		DB: db,
+	}
+}

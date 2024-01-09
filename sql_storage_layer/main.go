@@ -1,12 +1,11 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
@@ -22,29 +21,29 @@ func main() {
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
+	// Initializing the Database
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	parentCtx := context.Background()
-	ctx, cancel := context.WithTimeout(parentCtx, 5*time.Second)
-	defer cancel()
+	// Initializing the Repository
+	repo := NewRepository(db)
 
-	repo := &Repository{DB: db}
+	// Initializing the Service
+	svc := NewService(*repo)
 
-	// SERVICE init
+	// Creating a Router
+	router := gin.Default()
 
-	svc := &Service{Repo: *repo}
-
-	// svc.Create() -> empID
-	err = svc.CreateService(ctx, employeeFixture, positionFixture)
-	if err != nil {
-		log.Fatal("CreateService failed")
+	employeeGroup := router.Group("/v1/employee")
+	{
+		employeeGroup.POST("/", CreateEmployeeHandler(svc)) // Добавить возвращение employeeID в месседже
+		employeeGroup.GET("/:id", GetEmployeeHandler(svc))
+		employeeGroup.PUT("/:id", UpdateEmployeeHandler(svc)) // Status 200, но records отсутствуют
+		employeeGroup.DELETE("/:id", DeleteEmployeeHandler(svc))
 	}
 
-	fmt.Println("Successfully created")
-
-	// svc.getByID(empID)
+	router.Run("localhost:8080")
 }

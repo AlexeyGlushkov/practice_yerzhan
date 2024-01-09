@@ -89,3 +89,9 @@ func (svc *Service) DeleteService(ctx context.Context, employeeID string) error 
 
 	return nil
 }
+
+func NewService(repo Repository) *Service {
+	return &Service{
+		Repo: repo,
+	}
+}
