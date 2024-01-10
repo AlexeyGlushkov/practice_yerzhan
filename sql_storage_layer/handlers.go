@@ -6,6 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Creates an employee and position
+// @Description Method for creating a new employee and his position
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param employee body Employee true "New employee details"
+// @Param position body Position true "New position details"
+// @Success 201 {string} string "Employee and Position created successfully"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Internal server error"
+// @Router /v1/employee [post]
 func CreateEmployeeHandler(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {

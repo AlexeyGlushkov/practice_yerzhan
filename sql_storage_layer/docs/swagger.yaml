@@ -1,0 +1,61 @@
+definitions:
+  main.Employee:
+    properties:
+      employee_id:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+  main.Position:
+    properties:
+      employee_id:
+        type: string
+      position_id:
+        type: string
+      position_name:
+        type: string
+      salary:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/employee:
+    post:
+      consumes:
+      - application/json
+      description: Method for creating a new employee and his position
+      parameters:
+      - description: New employee details
+        in: body
+        name: employee
+        required: true
+        schema:
+          $ref: '#/definitions/main.Employee'
+      - description: New position details
+        in: body
+        name: position
+        required: true
+        schema:
+          $ref: '#/definitions/main.Position'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Employee and Position created successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Creates an employee and position
+      tags:
+      - Employees
+swagger: "2.0"
