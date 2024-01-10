@@ -47,24 +47,24 @@ func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (Empl
 	return resEmp, nil
 }
 
-func (svc *Service) UpdateEmployeeService(ctx context.Context, empID, fName, lName string) (Employee, error) {
+func (svc *Service) UpdateEmployeeService(ctx context.Context, empID, fName, lName string) error {
 
-	resEmp, err := svc.Repo.UpdateEmployee(ctx, empID, fName, lName)
+	err := svc.Repo.UpdateEmployee(ctx, empID, fName, lName)
 	if err != nil {
-		return Employee{}, fmt.Errorf("UpdateEmployee Service error: %w", err)
+		return fmt.Errorf("UpdateEmployee Service error: %w", err)
 	}
 
-	return resEmp, nil
+	return nil
 }
 
-func (svc *Service) UpdatePositionService(ctx context.Context, posID, posName string, salary int) (Position, error) {
+func (svc *Service) UpdatePositionService(ctx context.Context, posID, posName string, salary int) error {
 
-	resPos, err := svc.Repo.UpdatePosition(ctx, posID, posName, salary)
+	err := svc.Repo.UpdatePosition(ctx, posID, posName, salary)
 	if err != nil {
-		return Position{}, fmt.Errorf("UpdatePosition Service error: %w", err)
+		return fmt.Errorf("UpdatePosition Service error: %w", err)
 	}
 
-	return resPos, nil
+	return nil
 }
 
 func (svc *Service) DeleteService(ctx context.Context, employeeID string) error {

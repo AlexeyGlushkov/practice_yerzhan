@@ -60,11 +60,7 @@ func (r *Repository) GetByID(ctx context.Context, empID string) (Employee, error
 	return resEmp, nil
 }
 
-func (r *Repository) UpdateEmployee(ctx context.Context, empID, fName, lName string) (Employee, error) {
-
-	fail := func(err error) (Employee, error) {
-		return Employee{}, fmt.Errorf("UpdateEmployee error: %w", err)
-	}
+func (r *Repository) UpdateEmployee(ctx context.Context, empID, fName, lName string) error {
 
 	updateStatement := `
 	UPDATE employee
@@ -72,23 +68,16 @@ func (r *Repository) UpdateEmployee(ctx context.Context, empID, fName, lName str
 	WHERE employee_id = $1
 	RETURNING employee_id, first_name, last_name;`
 
-	var updatedEmp Employee
-
-	row := r.DB.QueryRowContext(ctx, updateStatement, empID, fName, lName)
-	err := row.Scan(&updatedEmp.Employee_id, &updatedEmp.First_name, &updatedEmp.Last_name)
+	_, err := r.DB.ExecContext(ctx, updateStatement, empID, fName, lName)
 
 	if err != nil {
-		return fail(err)
+		return err
 	}
 
-	return updatedEmp, nil
+	return nil
 }
 
-func (r *Repository) UpdatePosition(ctx context.Context, posID, posName string, salary int) (Position, error) {
-
-	fail := func(err error) (Position, error) {
-		return Position{}, fmt.Errorf("UpdatePosition error : %w", err)
-	}
+func (r *Repository) UpdatePosition(ctx context.Context, posID, posName string, salary int) error {
 
 	updateStatement := `
 	UPDATE position
@@ -96,16 +85,13 @@ func (r *Repository) UpdatePosition(ctx context.Context, posID, posName string, 
 	WHERE position_id = $1
 	RETURNING position_id, position_name, salary;`
 
-	var updatedPos Position
-
-	row := r.DB.QueryRowContext(ctx, updateStatement, posID, posName, salary)
-	err := row.Scan(&updatedPos.Position_id, &updatedPos.Position_name, &updatedPos.Salary)
+	_, err := r.DB.ExecContext(ctx, updateStatement, posID, posName, salary)
 
 	if err != nil {
-		return fail(err)
+		return err
 	}
 
-	return updatedPos, nil
+	return nil
 }
 
 func (repo *Repository) Delete(ctx context.Context, tx *sql.Tx, employeeID string) error {
