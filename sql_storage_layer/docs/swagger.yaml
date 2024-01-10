@@ -1,4 +1,12 @@
+basePath: /v1
 definitions:
+  main.CreateEmployeePayload:
+    properties:
+      employee:
+        $ref: '#/definitions/main.Employee'
+      position:
+        $ref: '#/definitions/main.Position'
+    type: object
   main.Employee:
     properties:
       employee_id:
@@ -19,27 +27,32 @@ definitions:
       salary:
         type: integer
     type: object
+  main.UpdateEmployeePayload:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+host: localhost:8080
 info:
   contact: {}
+  description: Application for operations on employee and position
+  title: Employee Service API
+  version: "1.0"
 paths:
-  /v1/employee:
+  /employee:
     post:
       consumes:
       - application/json
       description: Method for creating a new employee and his position
       parameters:
-      - description: New employee details
+      - description: New details
         in: body
-        name: employee
+        name: body
         required: true
         schema:
-          $ref: '#/definitions/main.Employee'
-      - description: New position details
-        in: body
-        name: position
-        required: true
-        schema:
-          $ref: '#/definitions/main.Position'
+          $ref: '#/definitions/main.CreateEmployeePayload'
       produces:
       - application/json
       responses:
@@ -56,6 +69,93 @@ paths:
           schema:
             type: string
       summary: Creates an employee and position
+      tags:
+      - Employees
+  /employee/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Method for deleting employee details by ID
+      parameters:
+      - description: EmployeeID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee deleted successfully
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Deletes Employee details by employeeID
+      tags:
+      - Employees
+    get:
+      consumes:
+      - application/json
+      description: Method for retrieving employee details by ID
+      parameters:
+      - description: EmployeeID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee details
+          schema:
+            $ref: '#/definitions/main.Employee'
+        "404":
+          description: Employee not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Return Employee details by employeeID
+      tags:
+      - Employees
+    put:
+      consumes:
+      - application/json
+      description: Method for updating employee details
+      parameters:
+      - description: EmployeeID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateEmployeePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee updated successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Updates Employee details
       tags:
       - Employees
 swagger: "2.0"

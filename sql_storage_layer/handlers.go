@@ -11,25 +11,22 @@ import (
 // @Tags Employees
 // @Accept json
 // @Produce json
-// @Param employee body Employee true "New employee details"
-// @Param position body Position true "New position details"
+// @Param body body CreateEmployeePayload true "New details"
 // @Success 201 {string} string "Employee and Position created successfully"
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Internal server error"
-// @Router /v1/employee [post]
+// @Router /employee [post]
 func CreateEmployeeHandler(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req struct {
-			Employee Employee `json:"employee"`
-			Position Position `json:"position"`
-		}
 
-		if err := c.ShouldBindJSON(&req); err != nil {
+		var payload CreateEmployeePayload
+
+		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if err := svc.CreateService(c.Request.Context(), req.Employee, req.Position); err != nil {
+		if err := svc.CreateService(c.Request.Context(), payload.Employee, payload.Position); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -38,6 +35,16 @@ func CreateEmployeeHandler(svc *Service) gin.HandlerFunc {
 	}
 }
 
+// @Summary Return Employee details by employeeID
+// @Description Method for retrieving employee details by ID
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path string true "EmployeeID"
+// @Success 200 {object} Employee "Employee details"
+// @Failure 500 {string} string "Internal server error"
+// @Failure 404 {string} string "Employee not found"
+// @Router /employee/{id} [get]
 func GetEmployeeHandler(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
@@ -57,6 +64,15 @@ func GetEmployeeHandler(svc *Service) gin.HandlerFunc {
 	}
 }
 
+// @Summary Deletes Employee details by employeeID
+// @Description Method for deleting employee details by ID
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path string true "EmployeeID"
+// @Success 200 {string} string "Employee deleted successfully"
+// @Failure 500 {string} string "Internal server error"
+// @Router /employee/{id} [delete]
 func DeleteEmployeeHandler(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
@@ -71,25 +87,33 @@ func DeleteEmployeeHandler(svc *Service) gin.HandlerFunc {
 	}
 }
 
+// @Summary Updates Employee details
+// @Description Method for updating employee details
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path string true "EmployeeID"
+// @Param body body UpdateEmployeePayload true "New details"
+// @Success 200 {string} string "Employee updated successfully"
+// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {string} string "Invalid request payload"
+// @Router /employee/{id} [put]
 func UpdateEmployeeHandler(svc *Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
 
-		var updateData struct {
-			FirstName string `json:"first_name"`
-			LastName  string `json:"last_name"`
-		}
+		var updateData UpdateEmployeePayload
 
 		if err := c.ShouldBindJSON(&updateData); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 
-		employee, err := svc.UpdateEmployeeService(c.Request.Context(), employeeID, updateData.FirstName, updateData.LastName)
+		err := svc.UpdateEmployeeService(c.Request.Context(), employeeID, updateData.FirstName, updateData.LastName)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"employee": employee})
+		c.JSON(http.StatusOK, gin.H{"message": "Employee updated successfully"})
 	}
 }

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/employee": {
+        "/employee": {
             "post": {
                 "description": "Method for creating a new employee and his position",
                 "consumes": [
@@ -30,21 +30,12 @@ const docTemplate = `{
                 "summary": "Creates an employee and position",
                 "parameters": [
                     {
-                        "description": "New employee details",
-                        "name": "employee",
+                        "description": "New details",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Employee"
-                        }
-                    },
-                    {
-                        "description": "New position details",
-                        "name": "position",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.Position"
+                            "$ref": "#/definitions/main.CreateEmployeePayload"
                         }
                     }
                 ],
@@ -69,9 +60,151 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/employee/{id}": {
+            "get": {
+                "description": "Method for retrieving employee details by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Employees"
+                ],
+                "summary": "Return Employee details by employeeID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "EmployeeID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Employee details",
+                        "schema": {
+                            "$ref": "#/definitions/main.Employee"
+                        }
+                    },
+                    "404": {
+                        "description": "Employee not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Method for updating employee details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Employees"
+                ],
+                "summary": "Updates Employee details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "EmployeeID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateEmployeePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Employee updated successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Method for deleting employee details by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Employees"
+                ],
+                "summary": "Deletes Employee details by employeeID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "EmployeeID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Employee deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "main.CreateEmployeePayload": {
+            "type": "object",
+            "properties": {
+                "employee": {
+                    "$ref": "#/definitions/main.Employee"
+                },
+                "position": {
+                    "$ref": "#/definitions/main.Position"
+                }
+            }
+        },
         "main.Employee": {
             "type": "object",
             "properties": {
@@ -102,18 +235,29 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "main.UpdateEmployeePayload": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Employee Service API",
+	Description:      "Application for operations on employee and position",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
