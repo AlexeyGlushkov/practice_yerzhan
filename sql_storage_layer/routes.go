@@ -6,7 +6,9 @@ import (
 
 func SetupRouter(svc *Service) *gin.Engine {
 
-	router := gin.Default()
+	router := gin.New()
+
+	router.Use(LoggerMiddleware())
 
 	employeeGroup := router.Group("/v1/employee")
 	{
