@@ -25,7 +25,7 @@ func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Positio
 
 	positionID, err := svc.Repo.CreatePosition(ctx, tx, employeeID, pos.Position_name, pos.Salary)
 	if err != nil {
-		return fmt.Errorf("repo: failed to create position: %w, empID: %v", err, employeeID)
+		return fmt.Errorf("repo: failed to create position: %w", err)
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -45,12 +45,27 @@ func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Positio
 
 func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (Employee, error) {
 
-	resEmp, err := svc.Repo.GetByID(ctx, employeeID)
+	// Пытаемся получить из кэша
+	cachedEmp, err := svc.Cache.GetByID(employeeID)
+	if err == nil {
+		// Запись найдена в кэше, возвращаем её
+		return *cachedEmp, nil
+	}
+
+	// Запись не найдена в кэше, выполняем поиск в БД
+	dbEmp, err := svc.Repo.GetByID(ctx, employeeID)
 	if err != nil {
 		return Employee{}, fmt.Errorf("GetByID Service error: %w", err)
 	}
 
-	return resEmp, nil
+	// Сохраняем в кэш
+	err = svc.Cache.CreateEmployee(dbEmp.Employee_id, dbEmp.First_name, dbEmp.Last_name)
+	if err != nil {
+		// Обработка ошибки сохранения в кэш, можно проигнорировать или выполнить другие действия
+		fmt.Printf("Error caching employee: %v\n", err)
+	}
+
+	return dbEmp, nil
 }
 
 func (svc *Service) UpdateEmployeeService(ctx context.Context, empID, fName, lName string) error {

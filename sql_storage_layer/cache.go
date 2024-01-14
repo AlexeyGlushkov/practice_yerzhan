@@ -20,7 +20,7 @@ func (rc *RedisClient) GetByID(employeeID string) (*Employee, error) {
 
 	data := rc.redisClient.Get(key)
 
-	if err := data.Err(); err == redis.Nil {
+	if err := data.Err(); errors.Is(err, redis.Nil) {
 		// not found in cache
 		return nil, ErrCacheMiss
 	} else if err != nil {
