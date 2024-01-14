@@ -26,16 +26,18 @@ func (r *Repository) CreateEmployee(ctx context.Context, tx *sql.Tx, empFirstnam
 	return employeeID, nil
 }
 
-func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, empID, posName string, salary int) error {
+func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, empID, posName string, salary int) (string, error) {
 	insertPositionQuery := `INSERT INTO position (employee_id, position_name, salary)
-	VALUES ($1, $2, $3)`
+	VALUES ($1, $2, $3) RETURNING position_id`
 
-	_, err := tx.ExecContext(ctx, insertPositionQuery, empID, posName, salary)
+	var positionID string
+
+	err := tx.QueryRowContext(ctx, insertPositionQuery, empID, posName, salary).Scan(&positionID)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return positionID, nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, empID string) (Employee, error) {

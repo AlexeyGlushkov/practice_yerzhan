@@ -6,32 +6,38 @@ import (
 )
 
 type Service struct {
-	Repo Repository
+	Repo  Repository
+	Cache RedisClient
 }
 
 func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Position) error {
 
-	fail := func(err error) error {
-		return fmt.Errorf("Create Service error: %w", err)
-	}
-
 	tx, err := svc.Repo.DB.BeginTx(ctx, nil)
 	if err != nil {
-		return fail(err)
+		return err
 	}
 	defer tx.Rollback()
 
 	employeeID, err := svc.Repo.CreateEmployee(ctx, tx, emp.First_name, emp.Last_name)
 	if err != nil {
-		return fail(err)
+		return fmt.Errorf("repo: failed to create employee: %w", err)
 	}
 
-	if err = svc.Repo.CreatePosition(ctx, tx, employeeID, pos.Position_name, pos.Salary); err != nil {
-		return fail(err)
+	positionID, err := svc.Repo.CreatePosition(ctx, tx, employeeID, pos.Position_name, pos.Salary)
+	if err != nil {
+		return fmt.Errorf("repo: failed to create position: %w, empID: %v", err, employeeID)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return fail(err)
+		return err
+	}
+
+	if err = svc.Cache.CreateEmployee(employeeID, emp.First_name, emp.Last_name); err != nil {
+		return fmt.Errorf("cache: failed to create employee: %w", err)
+	}
+
+	if err = svc.Cache.CreatePosition(positionID, pos.Position_name, employeeID, pos.Salary); err != nil {
+		return fmt.Errorf("cache: failed to create position: %w", err)
 	}
 
 	return nil
@@ -90,8 +96,9 @@ func (svc *Service) DeleteService(ctx context.Context, employeeID string) error 
 	return nil
 }
 
-func NewService(repo Repository) *Service {
+func NewService(repo Repository, cache RedisClient) *Service {
 	return &Service{
-		Repo: repo,
+		Repo:  repo,
+		Cache: cache,
 	}
 }

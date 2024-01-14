@@ -21,6 +21,12 @@ const (
 	dbname   = "postgres"
 )
 
+const (
+	redisAddr     = "localhost:6379"
+	redisPassword = ""
+	redisDB       = 0
+)
+
 // @title Employee Service API
 // @version 1.0
 // @description Application for operations on employee and position
@@ -40,8 +46,14 @@ func main() {
 	// Initializing the Repository
 	repo := NewRepository(db)
 
+	// Initializing the Cache
+	client, err := NewRedisClient(redisAddr, redisPassword, redisDB)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Initializing the Service
-	svc := NewService(*repo)
+	svc := NewService(*repo, *client)
 
 	// Setting up the router
 	router := SetupRouter(svc)
