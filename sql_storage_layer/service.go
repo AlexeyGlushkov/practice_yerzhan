@@ -45,23 +45,18 @@ func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Positio
 
 func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (Employee, error) {
 
-	// Пытаемся получить из кэша
 	cachedEmp, err := svc.Cache.GetByID(employeeID)
 	if err == nil {
-		// Запись найдена в кэше, возвращаем её
 		return *cachedEmp, nil
 	}
 
-	// Запись не найдена в кэше, выполняем поиск в БД
 	dbEmp, err := svc.Repo.GetByID(ctx, employeeID)
 	if err != nil {
 		return Employee{}, fmt.Errorf("GetByID Service error: %w", err)
 	}
 
-	// Сохраняем в кэш
 	err = svc.Cache.CreateEmployee(dbEmp.Employee_id, dbEmp.First_name, dbEmp.Last_name)
 	if err != nil {
-		// Обработка ошибки сохранения в кэш, можно проигнорировать или выполнить другие действия
 		fmt.Printf("Error caching employee: %v\n", err)
 	}
 
