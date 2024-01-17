@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "sql_storage_layer/proto/emppos.proto";
+
+service EmployeeService {
+
+    rpc GetEmployeeByID (EmployeeRequest) returns (EmployeeResponse);
+
+    rpc CreateEmployee (CreateEmployeeRequest) returns (CreateEmployeeResponse);
+
+    rpc UpdateEmployee (UpdateEmployeeRequest) returns (UpdateEmployeeResponse);
+    
+    rpc DeleteEmployee (DeleteEmployeeRequest) returns (DeleteEmployeeResponse);
+    
+}
+
+message EmployeeRequest {
+    string employee_id = 1;
+}
+
+message EmployeeResponse {
+    string employee_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+}
+
+message CreateEmployeeRequest {
+    string first_name = 1;
+    string last_name = 2;
+    string position_name = 3;
+    int32 salary = 4;
+} 
+
+message CreateEmployeeResponse {}
+
+message UpdateEmployeeRequest {
+    string employee_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+} 
+
+message UpdateEmployeeResponse {}
+
+message DeleteEmployeeRequest {
+    string employee_id = 1;
+}
+
+message DeleteEmployeeResponse {}
