@@ -9,10 +9,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "sql_storage_layer/docs"
+	server "sql_storage_layer/pkg/grpc/server"
 	http "sql_storage_layer/pkg/http"
 	cache "sql_storage_layer/pkg/repo/cache"
 	repo "sql_storage_layer/pkg/repo/postgres"
-	servc "sql_storage_layer/pkg/service"
+	service "sql_storage_layer/pkg/service"
 
 	_ "github.com/lib/pq"
 )
@@ -57,13 +58,21 @@ func main() {
 	}
 
 	// Initializing the Service
-	svc := servc.NewService(*repo, *client)
+	svc := service.NewService(*repo, *client)
 
-	// Setting up the router
+	// Setting routes for the HTTP server
 	router := http.SetupRouter(svc)
 
+	// Setting routes for Swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Starting the server
-	router.Run("localhost:8080")
+	// Starting the HTTP Server
+	go func() {
+		if err := router.Run("localhost:8080"); err != nil {
+			log.Fatalf("Failed to run HTTP server: %v", err)
+		}
+	}()
+
+	// Starting a gRPC server
+	server.StartServer()
 }
