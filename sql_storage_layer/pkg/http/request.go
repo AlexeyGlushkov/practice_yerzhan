@@ -1,12 +1,16 @@
-package main
+package http
+
+import (
+	"sql_storage_layer/pkg/models"
+)
 
 type CreateEmployeePayload struct {
-	Employee Employee `json:"employee"`
-	Position Position `json:"position"`
+	Employee models.Employee `json:"employee"`
+	Position models.Position `json:"position"`
 }
 
 type GetEmployeeResponse struct {
-	Employee Employee `json:"employee"`
+	Employee models.Employee `json:"employee"`
 }
 
 type UpdateEmployeePayload struct {

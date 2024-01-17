@@ -1,9 +1,10 @@
-package main
+package repo
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sql_storage_layer/pkg/models"
 
 	_ "github.com/lib/pq"
 )
@@ -40,17 +41,17 @@ func (r *Repository) CreatePosition(ctx context.Context, tx *sql.Tx, empID, posN
 	return positionID, nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, empID string) (Employee, error) {
+func (r *Repository) GetByID(ctx context.Context, empID string) (models.Employee, error) {
 
-	fail := func(err error) (Employee, error) {
-		return Employee{}, fmt.Errorf("GetByID error: %w", err)
+	fail := func(err error) (models.Employee, error) {
+		return models.Employee{}, fmt.Errorf("GetByID error: %w", err)
 	}
 
 	selectStatement := `
 	SELECT employee_id, first_name, last_name FROM employee
 	WHERE employee_id = $1;`
 
-	var resEmp Employee
+	var resEmp models.Employee
 
 	row := r.DB.QueryRowContext(ctx, selectStatement, empID)
 	err := row.Scan(&resEmp.Employee_id, &resEmp.First_name, &resEmp.Last_name)

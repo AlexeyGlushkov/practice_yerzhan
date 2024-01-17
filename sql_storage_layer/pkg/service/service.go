@@ -1,16 +1,19 @@
-package main
+package repo
 
 import (
 	"context"
 	"fmt"
+	"sql_storage_layer/pkg/models"
+	cache "sql_storage_layer/pkg/repo/cache"
+	repo "sql_storage_layer/pkg/repo/postgres"
 )
 
 type Service struct {
-	Repo  Repository
-	Cache RedisClient
+	Repo  repo.Repository
+	Cache cache.RedisClient
 }
 
-func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Position) error {
+func (svc *Service) CreateService(ctx context.Context, emp models.Employee, pos models.Position) error {
 
 	tx, err := svc.Repo.DB.BeginTx(ctx, nil)
 	if err != nil {
@@ -43,7 +46,7 @@ func (svc *Service) CreateService(ctx context.Context, emp Employee, pos Positio
 	return nil
 }
 
-func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (Employee, error) {
+func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (models.Employee, error) {
 
 	cachedEmp, err := svc.Cache.GetByID(employeeID)
 	if err == nil {
@@ -52,7 +55,7 @@ func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (Empl
 
 	dbEmp, err := svc.Repo.GetByID(ctx, employeeID)
 	if err != nil {
-		return Employee{}, fmt.Errorf("GetByID Service error: %w", err)
+		return models.Employee{}, fmt.Errorf("GetByID Service error: %w", err)
 	}
 
 	err = svc.Cache.CreateEmployee(dbEmp.Employee_id, dbEmp.First_name, dbEmp.Last_name)
@@ -106,7 +109,7 @@ func (svc *Service) DeleteService(ctx context.Context, employeeID string) error 
 	return nil
 }
 
-func NewService(repo Repository, cache RedisClient) *Service {
+func NewService(repo repo.Repository, cache cache.RedisClient) *Service {
 	return &Service{
 		Repo:  repo,
 		Cache: cache,

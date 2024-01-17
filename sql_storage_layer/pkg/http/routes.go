@@ -1,10 +1,12 @@
-package main
+package http
 
 import (
+	servc "sql_storage_layer/pkg/service"
+
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(svc *Service) *gin.Engine {
+func SetupRouter(svc *servc.Service) *gin.Engine {
 
 	router := gin.New()
 

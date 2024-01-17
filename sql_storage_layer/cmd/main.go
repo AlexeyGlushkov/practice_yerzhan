@@ -9,6 +9,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "sql_storage_layer/docs"
+	http "sql_storage_layer/pkg/http"
+	cache "sql_storage_layer/pkg/repo/cache"
+	repo "sql_storage_layer/pkg/repo/postgres"
+	servc "sql_storage_layer/pkg/service"
 
 	_ "github.com/lib/pq"
 )
@@ -44,19 +48,19 @@ func main() {
 	defer db.Close()
 
 	// Initializing the Repository
-	repo := NewRepository(db)
+	repo := repo.NewRepository(db)
 
 	// Initializing the Cache
-	client, err := NewRedisClient(redisAddr, redisPassword, redisDB)
+	client, err := cache.NewRedisClient(redisAddr, redisPassword, redisDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Initializing the Service
-	svc := NewService(*repo, *client)
+	svc := servc.NewService(*repo, *client)
 
 	// Setting up the router
-	router := SetupRouter(svc)
+	router := http.SetupRouter(svc)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

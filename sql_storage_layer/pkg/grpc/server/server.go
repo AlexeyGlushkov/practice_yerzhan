@@ -1,12 +1,13 @@
-package main
+package grpc
 
 import (
 	"context"
-	prt "sql_storage_layer/proto"
+	prt "sql_storage_layer/pkg/grpc/proto"
+	servc "sql_storage_layer/pkg/service"
 )
 
 type EmployeeServiceServer struct {
-	service *Service
+	service *servc.Service
 }
 
 func (svc *EmployeeServiceServer) GetEmployeeByID(ctx context.Context, req *prt.EmployeeRequest) (*prt.EmployeeResponse, error) {

@@ -1,9 +1,10 @@
-package main
+package repo
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sql_storage_layer/pkg/models"
 
 	"github.com/go-redis/redis"
 )
@@ -14,7 +15,7 @@ type RedisClient struct {
 	redisClient *redis.Client
 }
 
-func (rc *RedisClient) GetByID(employeeID string) (*Employee, error) {
+func (rc *RedisClient) GetByID(employeeID string) (*models.Employee, error) {
 
 	key := "employee:" + employeeID
 
@@ -28,7 +29,7 @@ func (rc *RedisClient) GetByID(employeeID string) (*Employee, error) {
 		return nil, err
 	}
 
-	var employee Employee
+	var employee models.Employee
 	bytesData, err := data.Bytes()
 	if err != nil {
 		return nil, fmt.Errorf("error when retrieving data from cache: %w", err)

@@ -1,9 +1,11 @@
-package main
+package http
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	servc "sql_storage_layer/pkg/service"
 )
 
 // @Summary Creates an employee and position
@@ -16,7 +18,7 @@ import (
 // @Failure 400 {string} string "Invalid request payload"
 // @Failure 500 {string} string "Internal server error"
 // @Router /employee [post]
-func CreateEmployeeHandler(svc *Service) gin.HandlerFunc {
+func CreateEmployeeHandler(svc *servc.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var payload CreateEmployeePayload
@@ -45,7 +47,7 @@ func CreateEmployeeHandler(svc *Service) gin.HandlerFunc {
 // @Failure 500 {string} string "Internal server error"
 // @Failure 404 {string} string "Employee not found"
 // @Router /employee/{id} [get]
-func GetEmployeeHandler(svc *Service) gin.HandlerFunc {
+func GetEmployeeHandler(svc *servc.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
 
@@ -73,7 +75,7 @@ func GetEmployeeHandler(svc *Service) gin.HandlerFunc {
 // @Success 200 {string} string "Employee deleted successfully"
 // @Failure 500 {string} string "Internal server error"
 // @Router /employee/{id} [delete]
-func DeleteEmployeeHandler(svc *Service) gin.HandlerFunc {
+func DeleteEmployeeHandler(svc *servc.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
 
@@ -98,7 +100,7 @@ func DeleteEmployeeHandler(svc *Service) gin.HandlerFunc {
 // @Failure 500 {string} string "Internal server error"
 // @Failure 400 {string} string "Invalid request payload"
 // @Router /employee/{id} [put]
-func UpdateEmployeeHandler(svc *Service) gin.HandlerFunc {
+func UpdateEmployeeHandler(svc *servc.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		employeeID := c.Param("id")
 
