@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "sql_storage_layer/proto/emppos.proto";
+option go_package = "sql_storage_layer/pkg/grpc/proto/emppos.proto";
 
 service EmployeeService {
 

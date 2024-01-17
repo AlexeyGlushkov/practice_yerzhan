@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sql_storage_layer/pkg/models"
 	cache "sql_storage_layer/pkg/repo/cache"
@@ -49,8 +50,13 @@ func (svc *Service) CreateService(ctx context.Context, emp models.Employee, pos 
 func (svc *Service) GetByIDService(ctx context.Context, employeeID string) (models.Employee, error) {
 
 	cachedEmp, err := svc.Cache.GetByID(employeeID)
-	if err == nil {
+
+	if cachedEmp != nil {
 		return *cachedEmp, nil
+	}
+
+	if err != nil && !errors.Is(err, cache.ErrCacheMiss) {
+		return models.Employee{}, err
 	}
 
 	dbEmp, err := svc.Repo.GetByID(ctx, employeeID)
