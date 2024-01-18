@@ -74,5 +74,5 @@ func main() {
 	}()
 
 	// Starting a gRPC server
-	server.StartServer()
+	server.StartServer(svc)
 }
