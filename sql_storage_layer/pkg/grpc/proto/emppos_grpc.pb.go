@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.25.2
-// source: pkg/grpc/proto/emppos.proto
+// source: sql_storage_layer/pkg/grpc/proto/emppos.proto
 
 package emppos_proto
 
@@ -209,5 +209,5 @@ var EmployeeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/grpc/proto/emppos.proto",
+	Metadata: "sql_storage_layer/pkg/grpc/proto/emppos.proto",
 }
