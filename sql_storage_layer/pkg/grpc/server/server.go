@@ -19,7 +19,7 @@ type EmployeeServiceServer struct {
 
 // mustEmbedUnimplementedEmployeeServiceServer implements emppos_proto.EmployeeServiceServer.
 func (*EmployeeServiceServer) mustEmbedUnimplementedEmployeeServiceServer() {
-	panic("unimplemented")
+	log.Fatalf("error occured")
 }
 
 func (svc *EmployeeServiceServer) GetEmployeeByID(ctx context.Context, req *pb.EmployeeRequest) (*pb.EmployeeResponse, error) {
