@@ -23,7 +23,7 @@ const (
 	port     = 5432
 	user     = "postgres"
 	password = "nivea100"
-	dbname   = "postgres"
+	dbname   = "emppos"
 )
 
 const (
