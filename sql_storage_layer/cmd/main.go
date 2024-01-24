@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	host     = "localhost"
+	host     = "db"
 	port     = 5432
 	user     = "postgres"
 	password = "nivea100"
@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	redisAddr     = "localhost:6379"
+	redisAddr     = "redis:6379"
 	redisPassword = ""
 	redisDB       = 0
 )
@@ -68,7 +68,7 @@ func main() {
 
 	// Starting the HTTP Server
 	go func() {
-		if err := router.Run("localhost:8080"); err != nil {
+		if err := router.Run("0.0.0.0:8080"); err != nil {
 			log.Fatalf("Failed to run HTTP server: %v", err)
 		}
 	}()
