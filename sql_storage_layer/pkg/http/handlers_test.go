@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"bytes"
@@ -11,18 +11,16 @@ import (
 	"os"
 	"testing"
 
-	pkghttp "sql_storage_layer/pkg/http"
 	"sql_storage_layer/pkg/models"
 	cache "sql_storage_layer/pkg/repo/cache"
 	repo "sql_storage_layer/pkg/repo/postgres"
 	service "sql_storage_layer/pkg/service"
 
 	"github.com/gin-gonic/gin"
-	migrate "github.com/rubenv/sql-migrate"
 )
 
 const (
-	testHost     = "db"
+	testHost     = "localhost"
 	testPort     = 5434
 	testUser     = "postgres"
 	testPassword = "postgres"
@@ -79,7 +77,7 @@ func setupTestsResourses() (error, *gin.Engine) {
 
 	testSvc := service.NewService(*testRepo, *testCache)
 
-	testRouter := pkghttp.SetupRouter(testSvc)
+	testRouter := SetupRouter(testSvc)
 
 	return nil, testRouter
 }
@@ -103,23 +101,49 @@ func createTestDatabase() (*sql.DB, error) {
 }
 
 func applyMigrations(db *sql.DB) error {
-	migration := &migrate.FileMigrationSource{
-		Dir: "database/migration",
-	}
+	// SQL-запрос для создания таблицы "employee"
+	createEmployeeTable := `
+	CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+		CREATE TABLE IF NOT EXISTS employee (
+			employee_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			first_name VARCHAR(50) NOT NULL,
+			last_name VARCHAR(50) NOT NULL,
+			created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+		);
+	`
 
-	num, err := migrate.Exec(db, "postgres", migration, migrate.Up)
+	// SQL-запрос для создания таблицы "position"
+	createPositionTable := `
+		CREATE TABLE IF NOT EXISTS position (
+			position_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			position_name VARCHAR(50) NOT NULL,
+			salary INTEGER,
+			employee_id UUID NOT NULL,
+			created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT fk_employee FOREIGN KEY (employee_id) REFERENCES employee (employee_id)
+		);
+	`
+
+	_, err := db.Exec(createEmployeeTable)
 	if err != nil {
-		return fmt.Errorf("error running migrations: %w \n", err)
+		return fmt.Errorf("error creating employee table: %w \n", err)
 	}
 
-	log.Printf("%d migrations applied \n", num)
+	_, err = db.Exec(createPositionTable)
+	if err != nil {
+		return fmt.Errorf("error creating position table: %w \n", err)
+	}
+
+	log.Printf("Tables created successfully \n")
 
 	return nil
 }
 
 func TestCreateEmployeeHandler(t *testing.T) {
 
-	payload := pkghttp.CreateEmployeePayload{
+	payload := CreateEmployeePayload{
 		Employee: models.Employee{
 			First_name: "John",
 			Last_name:  "Doe",
