@@ -17,6 +17,7 @@ import (
 	service "sql_storage_layer/pkg/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -37,52 +38,42 @@ var testRouter *gin.Engine
 var testServer *httptest.Server
 
 func TestMain(m *testing.M) {
-	err, router := setupTestsResourses()
-	if err != nil {
-		log.Fatalf("error initializing test resources: %v \n", err)
-	}
-
-	testRouter = router
-	testServer := httptest.NewServer(testRouter)
-	defer testServer.Close()
 
 	exitCode := m.Run()
-
-	if err := teardownTestResourses(); err != nil {
-		log.Fatalf("error cleaning test resources: %v \n", err)
-	}
 
 	os.Exit(exitCode)
 }
 
-func setupTestsResourses() (error, *gin.Engine) {
+func setupTestResources() error {
 	db, err := createTestDatabase()
 	if err != nil {
-		return err, nil
+		return err
 	}
-	defer db.Close() // xd
 
 	err = applyMigrations(db)
 	if err != nil {
-		return err, nil
+		return err
 	}
 
-	// Repo, Cache and Service
 	testRepo := repo.NewRepository(db)
 
 	testCache, err := cache.NewRedisClient(testRedisAddr, testRedisPassword, testRedisDB)
 	if err != nil {
-		return err, nil
+		return err
 	}
 
 	testSvc := service.NewService(*testRepo, *testCache)
 
-	testRouter := SetupRouter(testSvc)
+	testRouter = SetupRouter(testSvc)
 
-	return nil, testRouter
+	testServer = httptest.NewServer(testRouter)
+
+	return nil
 }
 
-func teardownTestResourses() error {
+func teardownTestResources() error {
+	testServer.Close()
+
 	return nil
 }
 
@@ -143,6 +134,16 @@ func applyMigrations(db *sql.DB) error {
 
 func TestCreateEmployeeHandler(t *testing.T) {
 
+	err := setupTestResources()
+	if err != nil {
+		t.Fatalf("Failed to set up test resources: %v", err)
+	}
+	defer func() {
+		if err := teardownTestResources(); err != nil {
+			t.Fatalf("Failed to tear down test resources: %v", err)
+		}
+	}()
+
 	payload := CreateEmployeePayload{
 		Employee: models.Employee{
 			First_name: "John",
@@ -155,26 +156,102 @@ func TestCreateEmployeeHandler(t *testing.T) {
 	}
 
 	payloadJSON, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("Failed to marshal payload to JSON: %v", err)
-	}
+	assert.Nil(t, err)
 
-	req, err := http.NewRequest("POST", "/v1/employee", bytes.NewBuffer(payloadJSON))
-	if err != nil {
-		t.Fatalf("Failed to create HTTP request: %v", err)
-	}
+	req, err := http.NewRequest("POST", "/v1/employee/", bytes.NewBuffer(payloadJSON))
+	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-
 	testRouter.ServeHTTP(recorder, req)
 
-	if recorder.Code != http.StatusCreated {
-		t.Errorf("Expected status %d; got %d", http.StatusCreated, recorder.Code)
+	assert.Equal(t, http.StatusCreated, recorder.Code)
+
+	expectedJSON := `{"message":"Employee and Position created successfully"}`
+	assert.JSONEq(t, expectedJSON, recorder.Body.String())
+}
+
+func TestGetEmployeeHandler(t *testing.T) {
+
+	err := setupTestResources()
+	if err != nil {
+		t.Fatalf("Failed to set up test resources: %v", err)
+	}
+	defer func() {
+		if err := teardownTestResources(); err != nil {
+			t.Fatalf("Failed to tear down test resources")
+		}
+	}()
+
+	employeeID := "c199907e-d190-44ed-bfef-be8a3329e8e2"
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/v1/employee/%s", employeeID), nil)
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	testRouter.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	expectedJSON := `{"employee":{"employee_id":"c199907e-d190-44ed-bfef-be8a3329e8e2","first_name":"John","last_name":"Doe"}}`
+	assert.JSONEq(t, expectedJSON, recorder.Body.String())
+}
+
+func TestUpdateEmployeeHandler(t *testing.T) {
+
+	err := setupTestResources()
+	if err != nil {
+		t.Fatalf("Failed to setup test resources")
+	}
+	defer func() {
+		if err := teardownTestResources(); err != nil {
+			t.Fatalf("Failed to tear down test resources")
+		}
+	}()
+
+	employeeID := "c199907e-d190-44ed-bfef-be8a3329e8e2"
+
+	payload := UpdateEmployeePayload{
+		FirstName: "Doe",
+		LastName:  "John",
 	}
 
-	response := recorder.Body.String()
-	expectedResponse := "Employee and Position created successfully"
-	if response != expectedResponse {
-		t.Errorf("Expected response %s; got %s", expectedResponse, response)
+	payloadJSON, err := json.Marshal(payload)
+	assert.Nil(t, err)
+
+	req, err := http.NewRequest("PUT", fmt.Sprintf("/v1/employee/%s", employeeID), bytes.NewBuffer(payloadJSON))
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	testRouter.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	expectedJSON := `{"message": "Employee updated successfully"}`
+	assert.JSONEq(t, expectedJSON, recorder.Body.String())
+}
+
+func TestDeleteEmployeeHandler(t *testing.T) {
+
+	err := setupTestResources()
+	if err != nil {
+		t.Fatalf("Failed to setup test resources")
 	}
+	defer func() {
+		if err := teardownTestResources(); err != nil {
+			t.Fatalf("Failed to tear down test resources")
+		}
+	}()
+
+	employeeID := "c199907e-d190-44ed-bfef-be8a3329e8e2"
+
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("/v1/employee/%s", employeeID), nil)
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	testRouter.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	expectedJSON := `{"message": "Employee deleted successfully"}`
+	assert.JSONEq(t, expectedJSON, recorder.Body.String())
 }
